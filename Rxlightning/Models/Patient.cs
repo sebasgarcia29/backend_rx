@@ -1,17 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Rxlightning.Validator;
-
-namespace Rxlightning.Entities
+﻿namespace Rxlightning.WebApi.Models
 {
-    public class Patients
+    public class Patient
     {
-
-        public string patientId { get; set; }
-
-        [Required(ErrorMessage = "The field {0} is required")]
-        [StringLength(maximumLength: 50, MinimumLength = 5)]
-        [FirstLetterUpperCaseAttribute]
+        public Guid patientId { get; set; }
         public string firstName { get; set; }
         public string lastName { get; set; }
         public string gender { get; set; }
@@ -21,8 +12,5 @@ namespace Rxlightning.Entities
         public string city { get; set; }
         public string state { get; set; }
         public string postalCode { get; set; }
-
-
     }
 }
-

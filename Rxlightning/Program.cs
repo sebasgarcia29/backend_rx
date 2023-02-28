@@ -1,55 +1,65 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
+﻿using System.Text;
+using Rxlightning.WebApi.Interface;
+using Rxlightning.WebApi.Models;
+using Rxlightning.WebApi.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi.Models;
-using Rxlightning.Filters;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-builder.Services.AddResponseCaching();
-builder.Services.AddControllers(options =>
+
+
+// Add services to the container.
+
+//Donot forgot to add ConnectionStrings as "dbConnection" to the appsetting.json file
+builder.Services.AddDbContext<DatabaseContext>
+    (options => options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
+builder.Services.AddTransient<IPatient, PatientsRepository>();
+builder.Services.AddControllers();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options.Filters.Add(typeof(MyFilterException));
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
 });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen();
-
-//var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
-//builder.Services.AddDbContext<ApplicationDBContext>(
-//    options => options.UseSqlServer(connectionString));
-
-builder.Services.AddCors(policyBuilder =>
-    policyBuilder.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyHeader())
-);
+//builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseCors();
-
 // Configure the HTTP request pipeline.
-
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("corsapp");
-
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+

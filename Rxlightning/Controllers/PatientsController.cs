@@ -1,129 +1,87 @@
-﻿using System;
-using System.Reflection;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Rxlightning.WebApi.Interface;
+using Rxlightning.WebApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Rxlightning.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace Rxlightning.Controllers
+namespace Rxlightning.WebApi.Controllers
 {
-    //[Route("api/[controller]")]
-    [Route("api/patients")]
+    [Authorize]
+    [Route("api/patient")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class PatientsController : ControllerBase
+    public class PatientController : ControllerBase
     {
-        private readonly ILogger<PatientsController> logger;
+        private readonly IPatient _IPatient;
 
-        public PatientsController(ILogger<PatientsController> logger)
+        public PatientController(IPatient IPatient)
         {
-            this.logger = logger;
+            _IPatient = IPatient;
         }
 
-        [HttpGet] // https://localhost:7126/api/patients
-        public ActionResult<List<Patients>> Get()
+        // GET: api/patient>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Patient>>> Get()
         {
-            return new List<Patients>()
+            return await Task.FromResult(_IPatient.GetPatientDetails());
+        }
+
+        // GET api/patient/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Patient>> Get(Guid id)
+        {
+            var patients = await Task.FromResult(_IPatient.GetPatientDetails(id));
+            if (patients == null)
             {
-                new Patients()
-                {
-                    patientId = "62421a54-0e45-4030-932c-0eeed3e08a2e",
-                    firstName = "Sebas",
-                    lastName= "Garcia",
-                    gender= "Male",
-                    dateOfBirth= new DateTime(2008, 6, 1, 7, 47, 0),
-                    addressLine1 = "123 Fake Street",
-                    addressLine2= "Suite 300",
-                    city= "Baltimore",
-                    state= "MD",
-                    postalCode= "50109"
-
-                },
-                new Patients()
-                {
-                    patientId = "64198a44-ab4d-4c51-897f-fc70a6a5011f",
-                    firstName = "Amos",
-                    lastName= "Burton",
-                    gender= "Male",
-                    dateOfBirth= new DateTime(2008, 6, 1, 7, 47, 0),
-                    addressLine1 = "456 North Avenue",
-                    addressLine2= null,
-                    city= "New York",
-                    state= "NY",
-                    postalCode= "00152"
-
-                },
-                new Patients()
-                {
-                    patientId = "59cd3910-8224-46c5-aab7-6fd2ef2fea79",
-                    firstName = "Naomi",
-                    lastName= "Nagata",
-                    gender= "Female",
-                    dateOfBirth= new DateTime(2008, 6, 1, 7, 47, 0),
-                    addressLine1 = "789 South Circle",
-                    addressLine2= "Apt 3B",
-                    city= "Louisville",
-                    state= "KY",
-                    postalCode= "30158"
-
-                },
-                new Patients()
-                {
-                    patientId = "f5319eef-c9a9-4c18-a3be-3b6b82539e27",
-                    firstName = "Chrisjen",
-                    lastName= "Avasarala",
-                    gender= "Female",
-                    dateOfBirth= new DateTime(2008, 6, 1, 7, 47, 0),
-                    addressLine1 = "8956 Oak Street",
-                    addressLine2= null,
-                    city= "San Diego",
-                    state= "CA",
-                    postalCode= "90210"
-
-                },
-                new Patients()
-                {
-                    patientId = "8f7b51a8-8082-4864-87e5-923c80e91840",
-                    firstName = "Clarissa",
-                    lastName= "Mao",
-                    gender= "Female",
-                    dateOfBirth= new DateTime(2008, 6, 1, 7, 47, 0),
-                    addressLine1 = "3845 Lakeview Drive",
-                    addressLine2= "Unit 37 Left",
-                    city= "Chicago",
-                    state= "IL",
-                    postalCode= "40589"
-
-                }
-            };
+                return NotFound();
+            }
+            return patients;
         }
 
-        [HttpGet("{id:int}")]
-        public Task<ActionResult<Patients>> Get(int Id)
-        {
-
-            throw new NotImplementedException();
-
-        }
-
+        // POST api/patient
         [HttpPost]
-        public ActionResult Post([FromBody] Patients gender)
+        public async Task<ActionResult<Patient>> Post(Patient patient)
         {
-            throw new NotImplementedException();
+            _IPatient.AddPatient(patient);
+            return await Task.FromResult(patient);
         }
 
-        [HttpPut]
-        public ActionResult Put([FromBody] Patients gender)
+        // PUT api/patient/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Patient>> Put(Guid id, Patient patient)
         {
-            throw new NotImplementedException();
-        }
-        [HttpDelete]
-        public ActionResult Delete()
-        {
-            throw new NotImplementedException();
+            if (id != patient.patientId)
+            {
+                return BadRequest();
+            }
+            try
+            {
+                _IPatient.UpdatePatient(patient);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PatienExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return await Task.FromResult(patient);
         }
 
+        // DELETE api/patient/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Patient>> Delete(Guid id)
+        {
+            var patient = _IPatient.DeletePatient(id);
+            return await Task.FromResult(patient);
+        }
+
+        private bool PatienExists(Guid id)
+        {
+            return _IPatient.CheckPatient(id);
+        }
     }
 }
-
