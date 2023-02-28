@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Rxlightning.WebApi.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/patient")]
     [ApiController]
     public class PatientController : ControllerBase
