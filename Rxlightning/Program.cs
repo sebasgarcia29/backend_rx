@@ -6,41 +6,43 @@ using Microsoft.IdentityModel.Tokens;
 using Rxlightning.Interface;
 using Rxlightning.Repository;
 using Microsoft.VisualBasic;
+using Rxlightning.Models;
+using Rxlightning.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddSingleton<IPatientsHttp, PatientsHttps>();
-
-builder.Services.AddHttpClient("PatientsHttpClient", httpClient =>
-{
-    httpClient.BaseAddress = new Uri("https://ti-patient-service.azurewebsites.net/");
-});
-
-//Implementation for JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var config = builder.Configuration["PatientsDataProviderSettings:Gateway"];
 
 builder.Services.AddCors(options => {
     options.AddPolicy("CorsPolicy", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
+
+
+//Implementation for JWT
+var jwtSettings = new JwtSettings();
+builder.Configuration.Bind("JwtSettings", jwtSettings);
+builder.Services.AddSingleton(jwtSettings);
+
+
+
+builder.Services.AddHttpClient("PatientsHttpClient", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(config);
+});
+
+builder.Services.AddJwt(jwtSettings);
+
+builder.Services.AddScoped<IPatientsHttp, PatientsHttps>();
+builder.Services.AddScoped<IUsersData, UserData>();
+
+builder.Services.AddScoped<IpatientRepository, PatientRepository>();
+builder.Services.AddScoped<IUserAuth, UserAuth>();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -54,9 +56,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
-
-app.UseRouting();
 
 app.UseCors("CorsPolicy");
 
@@ -64,9 +63,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers();
 
 app.Run();
 

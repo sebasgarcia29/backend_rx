@@ -14,7 +14,6 @@ namespace Rxlightning.Repository
             _httpClientFactory = httpClientFactory;
         }
 
-
         public async Task<IEnumerable<Patient>> GetAllAsync()
         {
             using var httpClient = GetHttpClient();
