@@ -4,7 +4,7 @@ using Rxlightning.WebApi.Models;
 
 namespace Rxlightning.Repository
 {
-    internal class PatientRepository : IpatientRepository
+    internal class PatientRepository : IPatientRepository
     {
         private readonly IPatientsHttp _patientsDataProvider;
 
@@ -37,7 +37,7 @@ namespace Rxlightning.Repository
 
             if (patient != null)
             {
-                patient.PatientId = id;
+                patient.PatientId = id.DecodeId();
             }
 
             return patient;

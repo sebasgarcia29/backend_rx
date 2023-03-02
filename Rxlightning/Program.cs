@@ -35,7 +35,7 @@ builder.Services.AddJwt(jwtSettings);
 builder.Services.AddScoped<IPatientsHttp, PatientsHttps>();
 builder.Services.AddScoped<IUsersData, UserData>();
 
-builder.Services.AddScoped<IpatientRepository, PatientRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IUserAuth, UserAuth>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

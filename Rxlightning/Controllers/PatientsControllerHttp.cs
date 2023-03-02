@@ -11,19 +11,19 @@ namespace Onetree.RxLightning.SeniorTechInterview.Al3xCubillos.API.Controllers
     [Produces("application/json")]
     public class PatientsController : ControllerBase
     {
-        private readonly IPatientsHttp _patientService;
+        private readonly IPatientRepository _patientRepository;
         private readonly ILogger<PatientsController> _logger;
 
-        public PatientsController(IPatientsHttp patientService, ILogger<PatientsController> logger)
+        public PatientsController(IPatientRepository patientService, ILogger<PatientsController> logger)
         {
-            _patientService = patientService;
+            _patientRepository = patientService;
             _logger = logger;
         }
 
         [HttpGet("")]
         public async Task<IEnumerable<Patient>> Get()
         {
-            var patients = await _patientService.GetAllAsync().ConfigureAwait(false);
+            var patients = await _patientRepository.GetAllAsync().ConfigureAwait(false);
 
             return patients;
         }
@@ -32,7 +32,7 @@ namespace Onetree.RxLightning.SeniorTechInterview.Al3xCubillos.API.Controllers
         [ProducesResponseType(typeof(Patient), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(string patientId)
         {
-            var patient = await _patientService.GetByIdAsync(patientId).ConfigureAwait(false);
+            var patient = await _patientRepository.GetByIdAsync(patientId).ConfigureAwait(false);
 
             if (patient == null)
             {
