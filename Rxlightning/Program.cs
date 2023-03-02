@@ -1,23 +1,25 @@
 ﻿using System.Text;
-using Rxlightning.WebApi.Interface;
 using Rxlightning.WebApi.Models;
-using Rxlightning.WebApi.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Rxlightning.Interface;
+using Rxlightning.Repository;
+using Microsoft.VisualBasic;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add services to the container.
+builder.Services.AddSingleton<IPatientsHttp, PatientsHttps>();
 
-//Donot forgot to add ConnectionStrings as "dbConnection" to the appsetting.json file
-builder.Services.AddDbContext<DatabaseContext>
-    (options => options.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
-builder.Services.AddTransient<IPatient, PatientsRepository>();
-builder.Services.AddControllers();
+builder.Services.AddHttpClient("PatientsHttpClient", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://ti-patient-service.azurewebsites.net/");
+});
+
+//Implementation for JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
