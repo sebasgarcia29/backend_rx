@@ -6,18 +6,18 @@ namespace Rxlightning.Repository
 {
     internal class PatientRepository : IPatientRepository
     {
-        private readonly IPatientsHttp _patientsDataProvider;
+        private readonly IPatientsHttp _patientsRepository;
 
 
-        public PatientRepository(IPatientsHttp patientsDataProvider)
+        public PatientRepository(IPatientsHttp patientsHttp)
         {
-            _patientsDataProvider = patientsDataProvider;
+            _patientsRepository = patientsHttp;
         }
 
 
         public async Task<IEnumerable<Patient>> GetAllAsync()
         {
-            var patients = await _patientsDataProvider.GetAllAsync();
+            var patients = await _patientsRepository.GetAllAsync();
 
             var patientsFormatted = patients.Select(patient =>
             {
@@ -33,7 +33,7 @@ namespace Rxlightning.Repository
         {
             var patientId = id.DecodeId();
 
-            var patient = await _patientsDataProvider.GetByIdAsync(patientId);
+            var patient = await _patientsRepository.GetByIdAsync(patientId);
 
             if (patient != null)
             {

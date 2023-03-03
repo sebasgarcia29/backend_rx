@@ -2,7 +2,7 @@
 {
     internal class Config
     {
-        public static readonly string secretKeyByEncode = "KeyForEncodeTest1234";
-        public static readonly TimeSpan DurationTime = TimeSpan.FromMinutes(10);
+        public static readonly string secretKeyByEncode = "▬RxLightningSecretKey▬";
+        public static readonly TimeSpan DurationTime = TimeSpan.FromMinutes(50);
     }
 }
