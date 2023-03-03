@@ -19,7 +19,7 @@ The services enable are;
 
 ## 2: Get specify patient (It's mandatory send a bearer token and the id in the URL) 
 example:
-https://localhost:7007/patient/62421a54-0e45-4030-932c-0eeed3e08a2e
+https://localhost:7007/patient/4pasUnhMaWdodG5pbmdTZWNyZXRLZXnilqw2MjQyMWE1NC0wZTQ1LTQwMzAtOTMyYy0wZWVlZDNlMDhhMmU=
 
 ## 3: Get bearer token
 
